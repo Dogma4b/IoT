@@ -1,0 +1,141 @@
+/*document.addEventListener("DOMContentLoaded", function() {
+    dl = document.getElementById("device-list"),
+    fsl = document.getElementById("file-system");
+});*/
+
+function ReceiveHandler(data) {
+    console.log(data)
+    /*switch(data.id) {
+        case 4:
+            if (data.code == 1) {
+                //ConsoleBeauty.addCode(data.message);
+                IsAuthed = true;
+                //ws.snd({id:1240}) //Get devices list
+            }
+        break;
+        case 1240:
+            SetupDeviceList(data.devices)
+        break;
+        case 110:
+            ConsoleBeauty.addCode(data.dco.split("\n> ",1)[0]) // Device console output
+        break;
+        case 111:
+            if (data.aid == 1) {
+                document.querySelector("#file-list").innerHTML = render(
+                    `if files
+                        each size, file in files
+                            tr
+                                td #{file}
+                                - size = (size / 1024).toFixed(2) + " Kb"
+                                    td #{size}
+                                td
+                                    .row
+                                        .col-md-4
+                                            - var isLua = file.split(".").slice(-1) == "lua";
+                                            - let compileBtn = "temp.compile('" + file + "')";
+                                            - let renameBtn = "temp.rename('" + file + "')";
+                                            - let removeBtn = "temp.remove('" + file + "')";
+                                                if isLua
+                                                    button.btn.btn-block.btn-success.btn-flat.btn-xs(type="button", onclick=compileBtn) compile
+                                                else
+                                                    button.btn.btn-block.btn-secondary.btn-flat.btn-xs.disabled(type="button") compile
+                                        .col-md-4
+                                            button.btn.btn-block.btn-warning.btn-flat.btn-xs(type="button", onclick=renameBtn) rename
+                                        .col-md-4
+                                            button.btn.btn-block.btn-danger.btn-flat.btn-xs(type="button", onclick=removeBtn) remove`
+                    ,{files:data.fsl});
+                //console.log(data.fsl);
+                //SetupFSList(data.fsl) // File system device get list
+            }
+            else if (data.aid == 2) {
+                console.log("file transfer complete")
+            }
+        break;
+    }*/
+}
+
+function SendFile(ev) {
+    let fileReader = new FileReader()
+
+    fileReader.onloadend = (data) => {
+        let chunks = SplitData(data.target.result, 128)
+
+        chunks.forEach((chunk, index) => {
+            chunk = btoa(chunk)
+            if (index == 0) {
+                ws.snd({id:111,aid:2,deviceId:activeDevice,file:{aid:1,name:ev.files[0].name,chunk:chunk}}); console.log("First chunk " + index + " sended")
+            } else if (chunks.length != index + 1) {
+                ws.snd({id:111,aid:2,deviceId:activeDevice,file:{aid:2,name:ev.files[0].name,chunk:chunk}}); console.log("chunk " + index + " sended")
+            } else {
+                ws.snd({id:111,aid:2,deviceId:activeDevice,file:{aid:3,name:ev.files[0].name,length:data.target.result.length,extra:2,chunk:chunk}}); console.log("file sended")
+            }
+        })
+    }
+
+    fileReader.readAsText(ev.files[0])
+}
+
+function SplitData(data, chunkSize) {
+    let chunks = new Array();
+    let curPos = 0;
+
+    for (let i=0; i<Math.ceil(data.length / chunkSize); i++, curPos+=chunkSize) {
+        chunks[i] = data.substr(curPos, chunkSize);
+    }
+
+    return chunks;
+}
+
+function SetupFSList(files) {
+
+    document.querySelector(".table").children[1].innerHTML = render(`if files\n each size, file in files\n  tr\n   td #{file}\n   td #{size}\n   td compile rename remove`, {files:files});
+}
+
+function SetupDeviceList(list) {
+    let template = new DOMParser().parseFromString(`<li class="nav-item dropdown"><a class="nav-link" data-toggle="dropdown" href="#"><i class="fas fa-microchip"></i></a><div class="dropdown-menu dropdown-menu-lg dropdown-menu-right"><span class="dropdown-item dropdown-header">Active: ` + activeDevice + `</span><div class="dropdown-divider"></div></div></li>`, "text/html")
+    //let templateList = template.querySelector(".dropdown-menu");
+    for (let device of list) {
+        let a = document.createElement("a");
+        a.className = "dropdown-item";
+        a.innerHTML = device.id;
+        a.href = "#";
+        //a.value = device.id
+        a.setAttribute("onclick", `if (activeDevice == ` + device.id + `) return; activeDevice = "` + device.id + `"; ws.snd({id:118,deviceId:activeDevice});`);
+
+        template.querySelector(".dropdown-menu").appendChild(a); 
+    }
+
+    render({nav:template.body.firstChild.outerHTML}, false);
+}
+
+function render(data, ...args) {
+
+    if (typeof(data) == "string")
+        return pug.compile(data)(args[0]);
+
+    document.querySelector("#add_navs").innerHTML = null;
+
+    let compile = true,
+        values = {};
+
+    if (typeof(args[0]) === "boolean") {
+        compile = args[0];
+    } else {
+        values = args[0];
+        if (typeof(args[1]) !== "undefined")
+            compile = args[1];
+    }
+
+    if ((typeof(data.nav) !== "undefined") && (data.nav !== "")) {
+        document.querySelector("#add_navs").innerHTML = compile ? pug.compile(data.nav)(values) : data.nav;
+    }
+    if ((typeof(data.header) !== "undefined") && (data.header !== "")) {
+        document.querySelector(".content-header").innerHTML = compile ? pug.compile(data.header)(values) : data.header;
+    }
+    if ((typeof(data.content) !== "undefined") && (data.content !== "")) {
+        document.querySelector("#content").innerHTML = compile ? pug.compile(data.content)(values) : data.content;
+    }
+    if (typeof(data.js) === "function") {
+        data.js(this);
+    }
+}

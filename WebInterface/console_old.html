@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <script src="js/main.js"></script>
+        <script src="js/crypto-js.js"></script>
+    </head>
+    <body>
+        <div style="float: left; width: 85%; height: 100%;">
+            <textarea id="console-output" readonly style="width: 100%; height: 95%; resize: none; outline: none; border: 1px solid rgb(109, 54, 182); border-bottom: none; cursor:default;"></textarea>
+            <input id="console-input" type="text" style="width: 100%; height: 5%; resize: none; outline: none; border: 1px solid rgb(109, 54, 182);">
+        </div>
+        <div style=" padding: 0; float: left; width: 14.5%; height: 95%; margin-left:.3%;">
+            <div id="device-list" style="float: left; width: 100%; height: 52.5%; padding-top: 3%; margin-bottom: 2%; border: 1px solid rgb(109, 54, 182);"></div>
+            <div id="file-system" style="float: left; width: 100%; height: 50%; padding-top: 3%; border: 1px solid rgb(109, 54, 182);">
+                <input id="file-upload" type="file" accept=".lua" style="width: 90%; margin-left: 5%;" onchange="SendFile(this)">
+            </div>
+        </div>
+    </body>
+</html>

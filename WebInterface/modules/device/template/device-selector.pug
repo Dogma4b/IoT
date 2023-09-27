@@ -1,0 +1,9 @@
+li.nav-item.dropdown
+    a.nav-link(data-toggle="dropdown" href="#")
+        i.fas.fa-microchip
+    .dropdown-menu.dropdown-menu-lg.dropdown-menu-right
+        span.dropdown-item.dropdown-header Empty
+        .dropdown-divider
+        if devices
+            each device, id in devices
+                a.dropdown-item(href="#" onclick="if (activeDevice == '" + device.id + "') return; activeDevice = '" + device.id + "'; ws.snd({id:118,deviceId:activeDevice}); if (typeof(module.current.Init) != 'undefined') module.current.Init(activeDevice);") #{device.id}

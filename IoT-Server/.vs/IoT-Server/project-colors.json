@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "a11e767e-bc2c-4946-bc43-8dc43f43dcec": {
+      "ProjectGuid": "a11e767e-bc2c-4946-bc43-8dc43f43dcec",
+      "DisplayName": "IoT-Server",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}

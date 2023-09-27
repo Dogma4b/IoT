@@ -1,0 +1,28 @@
+<template lang="pug" tag="add_navs" include="device/template/device-selector"></template>
+
+<template lang="pug" tag="content">
+    .container-fluid
+        .row.mb-2
+            .mx-auto(style="width:70%;")
+                .card.card-purple
+                    .card-header
+                        .card-title
+                            i.fas.fa-cog
+                        .card-tools
+                                i.fas.fa-cog
+                                if activeDevice
+                                    i  Active device: (#{activeDevice})
+                                else
+                                    i  Active device: (None)
+                    .card-body.p-0
+</template>
+
+<script lang="lua">
+    module.Init = function(self, deviceId)
+        module:render()
+    end
+</script>
+
+<script lang="lua" type="packet" id="1240">
+    module:render(object({devices = data.devices}));
+</script>

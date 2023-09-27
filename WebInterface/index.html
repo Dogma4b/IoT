@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>IoT server interface</title>
+
+        <link rel="stylesheet" href="/addons/fontawesome-free/css/all.min.css">
+        <link rel="stylesheet" href="/css/style.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700">
+
+        <link rel="stylesheet" href="/addons/codemirror/codemirror.css">
+        <link rel="stylesheet" href="/addons/codemirror/theme/monokai.css">
+    </head>
+    <body class="hold-transition layout-fixed dark-mode accent-purple">
+        <div class="wrapper">
+            <nav class="main-header navbar navbar-expand navbar-dark">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ml-auto">
+                    <div id="add_navs"></div>
+                    <li class="nav-item">
+                        <a class="nav-link" data-widget="fullscreen" href="#" role="button"><i class="fas fa-expand-arrows-alt"></i></a>
+                    </li>
+                </ul>
+            </nav>
+            <aside class="main-sidebar sidebar-dark-purple elevation-4">
+                <a href="/" class="brand-link">
+                    <!--<img src="" alt="IoT interface" class="brand-image img-circle elevation-3" style="opacity: .8;">-->
+                    <span class="brand-text font-weight-light">Home IoT system interface</span>
+                </a>
+
+                <div class="sidebar">
+                    <nav class="mt-2">
+                        <ul id="sidebar" class="nav nav-pills nav-sidebar flex-column nav-compact nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
+                            <!--Dynamic sidebar-->
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
+            <div class="content-wrapper">
+                <div class="content-header"></div><!--Content header-->
+                <div id="content" class="content"></div><!--Content-->
+            </div>
+        </div>
+
+        <script src="/addons/crypto/js/crypto.js"></script>
+        <script src="/addons/pug/js/pug.js"></script>
+        <script src="/addons/vm/js/lua.js"></script>
+        <script src="/addons/navigo/js/navigo.min.js"></script>
+        <script src="/addons/jquery/jquery.min.js"></script>
+        <script src="/addons/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="/addons/codemirror/codemirror.js"></script>
+        <script src="/addons/codemirror/mode/lua/lua.js"></script>
+        <script src="/js/template.js"></script>
+        <script src="/js/main.js"></script>
+        <script src="/js/router.js"></script>
+    </body>
+</html>

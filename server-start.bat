@@ -1,0 +1,1 @@
+start ./IoT-Server/IoT-Server/bin/Debug/netcoreapp3.1/IoT-Server.exe

@@ -1,0 +1,38 @@
+{
+    "server": {
+        "name": "Server",
+        "icon": "fa-server",
+        "items": {}
+    },
+    "database": {
+        "name": "Database",
+        "icon": "fa-database",
+        "items": {}
+    },
+    "device": {
+        "name": "IoT Devices",
+        "icon": "fa-microchip",
+        "items": {
+            "console": {
+                "name": "Console",
+                "icon": "fa-terminal",
+                "logic": "setTimeout(() => ws.snd({id:1240}), 100)"
+            },
+            "fs": {
+                "name": "File system",
+                "icon": "fa-folder",
+                "logic": "setTimeout(() => ws.snd({id:1240}), 100); if (activeDevice != null) ws.snd({id:111,action:1,deviceId:activeDevice});"
+            },
+            "events": {
+                "name": "Scripted events",
+                "icon": "fa-code",
+                "logic": "setTimeout(() => ws.snd({id:1240}), 100); if (activeDevice != null) ws.snd({id:111,action:1,deviceId:activeDevice});"
+            },
+            "config": {
+                "name": "Configuration",
+                "icon": "fa-cog",
+                "logic": "setTimeout(() => ws.snd({id:1240}), 100)"
+            }
+        }
+    }
+}

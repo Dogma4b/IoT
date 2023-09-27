@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "IoT-Server\\IoT-Server\\bin\\Debug\\netcoreapp3.1\\lua",
+			"name": "Server"
+		},
+		{
+			"path": "core",
+			"name": "Device"
+		},
+		{
+			"path": "WebInterface",
+			"name": "WebInterface"
+		}
+	],
+	"settings": {}
+}

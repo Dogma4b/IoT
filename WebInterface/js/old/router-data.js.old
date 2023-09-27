@@ -1,0 +1,101 @@
+let data = {}
+data.devices = {}
+
+data.devices["console"] = {
+content:`
+.container-fluid
+    .row.mb-2
+        .col-sm-12
+            .card.card-purple
+                .card-header
+                    .card-title
+                        i.fas.fa-terminal
+                    .card-tools
+                            i.fas.fa-microchip
+                            i  active chip name
+                .card-body.p-0
+                    textarea#ConsoleBeauty
+                .card-footer.p-1
+                    textarea#ConsoleInputBeauty`,
+js: (that) => {
+    that.ConsoleBeauty = CodeMirror.fromTextArea(document.getElementById("ConsoleBeauty"),{mode:"lua", theme:"monokai", readOnly:true})
+    ConsoleBeauty.setSize("100%", (window.screen.height * 70) / 100)
+    ConsoleBeauty.addCode = function(code) {this.setValue(this.getValue() + code + "\n"); this.setCursor(this.lineCount(),0);}
+    that.ConsoleInputBeauty = CodeMirror.fromTextArea(document.getElementById("ConsoleInputBeauty"),{mode:"lua", theme:"monokai", extraKeys: {
+        "Enter": function(cm) {
+            if (activeDevice != null) {
+                if (cm.getValue() != "")
+                    ws.snd({id:110,deviceId:activeDevice,dci:cm.getValue()});
+                ConsoleBeauty.addCode(">" + cm.getValue());
+                ConsoleBeauty.setCursor(ConsoleBeauty.lineCount(),0)
+                cm.setValue("");
+            }
+        }
+    }})
+    ConsoleInputBeauty.setSize("100%", (window.screen.height * 4) / 100)
+
+    if (activeDevice != null)
+        ConsoleBeauty.addCode("Device id: " + activeDevice + " opening console...");
+
+    setTimeout(() => ws.snd({id:1240}), 10);
+}};
+
+data.devices["fs"] = {
+content:`
+.container-fluid
+    .row.mb-2
+        .col-sm-6
+            .card.card-purple
+                .card-header
+                    h3.card-title Device file system
+                .card-body.p-0
+                    table.table.table-bordered
+                        thead
+                            tr
+                                th(style="width:30%; text-align: center;") File
+                                th(style="width:15%; text-align: center;") Size
+                                th(style="width:50%; text-align: center;") Actions
+                        tbody#file-list
+                .card-footer.p-1
+                    i Upload file section
+        .col-sm-6
+            .card.card-purple
+                .card-header
+                    h3.card-title System info
+                .card-body.p-0
+                .card-footer.p-1
+                    i Upload file section`,
+js: (that) => {
+    let device = {
+        compile: (fileName) => {
+            ws.snd({id:111,aid:4,deviceId:activeDevice,file:{aid:2,name:fileName}});
+        },
+        rename: (fileName, fileNewName) => {
+            ws.snd({id:111,aid:3,deviceId:activeDevice,file:{name:fileName,newname:fileNewName}});
+        },
+        remove: (fileName) => {
+            ws.snd({id:111,aid:5,deviceId:activeDevice,file:{name:fileName}});
+        }
+    }
+    if (activeDevice != null) {
+        ws.snd({id:111,aid:1,deviceId:activeDevice});
+    }
+    else {
+        let updCount = 1;
+        let updFileList = setInterval(() => {
+            if (activeDevice != null) {
+                ws.snd({id:111,aid:1,deviceId:activeDevice});
+                clearInterval(updFileList);
+            }
+            else if (updCount == 1000) {
+                clearInterval(updFileList);
+                updCount = 1;
+                return;
+            }
+            updCount++;
+        },100);
+    }
+    setTimeout(() => ws.snd({id:1240}), 10);
+}};
+
+export default data;

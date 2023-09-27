@@ -1,0 +1,161 @@
+<template lang="pug" tag="add_navs" include="device/template/device-selector"></template>
+
+<template lang="pug" tag="content">
+    .container-fluid
+        .row.mb-2
+            .col-sm-6
+                .card.card-purple
+                    .card-header
+                        h3.card-title Application files
+                    .card-body.p-0
+                        if files
+                            table.table.table-bordered
+                                thead
+                                    tr
+                                        th(style="width:30%; text-align: center;") File
+                                        th(style="width:15%; text-align: center;") Size
+                                        th(style="width:50%; text-align: center;") Actions
+                                tbody
+                                    each file, key in files
+                                        if !file.system
+                                            tr
+                                                td #{file.name}
+                                                - let size = (file.size / 1024).toFixed(2) + " Kb"
+                                                    td #{size}
+                                                td
+                                                    .row
+                                                        .col-md-4
+                                                            - let isLua = file.name.split(".").slice(-1) == "lua";
+                                                            - let compileBtn = "module.current.objects.action.compile('" + file.name + "')";
+                                                            - let renameBtn = "module.current.objects.action.rename('" + file.name + "')";
+                                                            - let removeBtn = "module.current.objects.action.remove('" + file.name + "')";
+                                                            if isLua
+                                                                button.btn.btn-block.btn-success.btn-flat.btn-xs(type="button", onclick=compileBtn) compile
+                                                            else
+                                                                button.btn.btn-block.btn-secondary.btn-flat.btn-xs.disabled(type="button") compile
+                                                        .col-md-4
+                                                            button.btn.btn-block.btn-warning.btn-flat.btn-xs(type="button", onclick=renameBtn) rename
+                                                        .col-md-4
+                                                            button.btn.btn-block.btn-danger.btn-flat.btn-xs(type="button", onclick=removeBtn) remove
+                        else
+                            div(style="border:1px solid #6c757d; text-align:center; padding:10px 0 10px 0;") Select device
+                    if files
+                        .card-footer.p-0
+                            if FileUpload
+                                .progress(style="border:1px solid #6c757d; border-top:0;")
+                                    .progress-bar.bg-primary.progress-bar-striped(role="progressbar" aria-valuemin="0" aria-valuemax="100")
+                            else
+                                .input-group
+                                    .input-group-prepend
+                                        span.input-group-text(style="border-top:0; border-radius:0; border-color:#6c757d;")
+                                            i(style="margin-right: 8px;") Compile
+                                            input#compile-script(type="checkbox")
+                                    .custom-file
+                                        input.custom-file-input#customFile(type="file" onchange="module.current.objects.action.sendFile(this);")
+                                        label.custom-file-label(for="customFile" style="border-top:0; border-radius:0; border-color:#6c757d;") Choose lua script
+            .col-sm-6
+                .card.card-purple
+                    .card-header
+                        h3.card-title System files
+                    .card-body.p-0
+                        if files
+                            table.table.table-bordered
+                                thead
+                                    tr
+                                        th(style="width:30%; text-align: center;") File
+                                        th(style="width:15%; text-align: center;") Size
+                                tbody
+                                    each file, key in files
+                                        if file.system
+                                            tr
+                                                td #{file.name}
+                                                - let size = (file.size / 1024).toFixed(2) + " Kb"
+                                                    td #{size}
+                        else
+                            div(style="border:1px solid #6c757d; text-align:center; padding:10px 0 10px 0;") Select device
+                    .card-footer.p-0
+</template>
+
+<script lang="lua" type="packet" id="1240">
+    module:render(object({devices = data.devices}));
+</script>
+
+<script lang="lua" type="packet" id="111">
+    if (data.action == 1) then
+        if (module.data.FileUpload) then
+            module.data.FileUpload = false;
+        end
+        module:render(object({files = data.fsl}));
+    elseif (data.action == 2) then
+        ws:sndl({id = 111, action = 1, deviceId = js.global.activeDevice})
+    end
+</script>
+
+<script lang="lua">
+    module.Init = function(self, deviceId)
+        ws:sndl({id = 111, action = 1, deviceId = deviceId});
+    end
+</script>
+
+<script>
+    module.objects.action = {
+        compile: (fileName) => {
+            ws.snd({id:111,action:4,deviceId:activeDevice,file:{action:2,name:fileName}});
+            setTimeout(() => ws.snd({id:111,action:1,deviceId:activeDevice}), 500);
+        },
+        rename: (fileName, fileNewName) => {
+            ws.snd({id:111,action:3,deviceId:activeDevice,file:{name:fileName,newname:fileNewName}});
+            setTimeout(() => ws.snd({id:111,action:1,deviceId:activeDevice}), 500);
+        },
+        remove: (fileName) => {
+            ws.snd({id:111,action:5,deviceId:activeDevice,file:{name:fileName}});
+            setTimeout(() => ws.snd({id:111,action:1,deviceId:activeDevice}), 500);
+        },
+        sendFile: (ev) => {
+            let fileReader = new FileReader()
+
+            fileReader.onloadend = (data) => {
+                let chunks = splitData(data.target.result, 128);
+
+                chunks.forEach((chunk, index) => {
+                    chunk = btoa(chunk)
+                    if (index == 0) {
+                        ws.snd({id:111,action:2,deviceId:activeDevice,file:{action:1,name:ev.files[0].name,chunk:chunk}}); //console.log("First chunk " + index + " sended")
+                    } else if (chunks.length != index + 1) {
+                        ws.snd({id:111,action:2,deviceId:activeDevice,file:{action:2,name:ev.files[0].name,chunk:chunk}}); //console.log("chunk " + index + " sended")
+                    } else {
+                        ws.snd({id:111,action:2,deviceId:activeDevice,file:{action:3,name:ev.files[0].name,length:data.target.result.length,extra:document.querySelector("#compile-script").checked ? 2 : 0,chunk:chunk}}); //console.log("file sended")
+                    }
+                })
+                
+                module.render({FileUpload:true}, () => renderProgress(chunks.length));
+            }
+
+            fileReader.readAsText(ev.files[0]);
+
+            function splitData(data, chunkSize) {
+                let chunks = new Array();
+                let curPos = 0;
+
+                for (let i=0; i<Math.ceil(data.length / chunkSize); i++, curPos+=chunkSize) {
+                    chunks[i] = data.substr(curPos, chunkSize);
+                }
+
+                return chunks;
+            }
+
+            function renderProgress(numChunks) {
+                let [progressBar, width, intId] = [document.querySelector(".progress-bar"), 1, setInterval(updProgressBar, (numChunks / 4) * 8)];
+
+                function updProgressBar() {
+                    if (width >= 100) {
+                        clearInterval(intId);
+                    } else {
+                        width++;
+                        progressBar.style.width = width + "%";
+                    }
+                }
+            }
+        }
+    }
+</script>

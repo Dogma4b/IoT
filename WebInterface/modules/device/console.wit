@@ -1,0 +1,61 @@
+<template lang="pug" tag="add_navs" include="device/template/device-selector"></template>
+
+<template lang="pug" tag="content">
+    .container-fluid
+        .row.mb-2
+            .col-sm-12
+                .card.card-purple
+                    .card-header
+                        .card-title
+                            i.fas.fa-terminal   
+                        .card-tools
+                                i.fas.fa-microchip
+                                if activeDevice
+                                    i  Active device: (#{activeDevice})
+                                else
+                                    i  Active device: (None)
+                    .card-body.p-0
+                        textarea#ConsoleBeauty
+                    .card-footer.p-1
+                        textarea#ConsoleInputBeauty
+</template>
+
+<script lang="lua" type="packet" id="1240">
+    module:render(object({devices = data.devices}));
+</script>
+
+<script lang="lua" type="packet" id="110">
+    module.objects.console:addCode(data.output:sub(0,-4));
+    --module.objects.console.addCode(data.dco.split("\n> ",1)[0]); Old JS code
+</script>
+
+<script lang="lua">
+    module.Init = function(self, deviceId)
+        module:render()
+    end
+</script>
+
+<script update="true">
+    let [console, input] = [
+        CodeMirror.fromTextArea(document.getElementById("ConsoleBeauty"),{mode:"lua", theme:"monokai", readOnly:true}),
+        CodeMirror.fromTextArea(document.getElementById("ConsoleInputBeauty"),{mode:"lua", theme:"monokai", extraKeys: {
+            "Enter": function(cm) {
+                if (activeDevice != null) {
+                    if (cm.getValue() != "")
+                        ws.snd({id:110,deviceId:activeDevice,input:cm.getValue()});
+                    console.addCode(">" + cm.getValue());
+                    console.setCursor(console.lineCount(),0)
+                    cm.setValue("");
+                }
+            }
+    }})]
+    console.setSize("100%", (window.screen.height * 70) / 100)
+    console.addCode = function(code) {this.setValue(this.getValue() + code + "\n"); this.setCursor(this.lineCount(),0);}
+    input.setSize("100%", (window.screen.height * 4) / 100)
+
+    if (activeDevice != null)
+        console.addCode("Device id: " + activeDevice + " opening console...");
+
+    module.objects["console"] = console;
+    module.objects["input"] = input;
+</script>
